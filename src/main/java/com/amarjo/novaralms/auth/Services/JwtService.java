@@ -13,11 +13,9 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    // يجب أن يكون المفتاح 32 حرفاً أو أكثر ليتوافق مع HS256
     private final String SECRET_STRING = "jo782005am2005yassmoham26111977yassyassmohammoham";
 
     private SecretKey getSigningKey() {
-        // تحويل النص إلى مفتاح آمن
         return Keys.hmacShaKeyFor(SECRET_STRING.getBytes(StandardCharsets.UTF_8));
     }
 
