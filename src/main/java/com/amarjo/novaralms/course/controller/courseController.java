@@ -35,11 +35,11 @@ public class courseController {
     public ResponseEntity<ApiResponse<courseResponse>> updateCourse(@PathVariable String courseCode,@RequestBody courseRequest CourseRequest) {
         return new ResponseEntity<>(CourseServices.updateCourse(courseCode, CourseRequest), HttpStatus.OK);
     }
-    @DeleteMapping("/delete/{courseCode}")
+    @DeleteMapping("/{courseCode}/delete")
     public ResponseEntity<ApiResponse<courseResponse>> deleteCourse(@PathVariable String courseCode) {
         return new ResponseEntity<>(CourseServices.deleteCourse(courseCode), HttpStatus.OK);
     }
-    @GetMapping("/getCourse/{courseCode}")
+    @GetMapping("/{courseCode}/getCourse")
     public ResponseEntity<ApiResponse<courseResponse>> getCourse(@PathVariable String courseCode) {
         return new ResponseEntity<>(CourseServices.getCourse(courseCode), HttpStatus.OK);
     }
