@@ -24,6 +24,8 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setEmail(registerRequest.getEmail());
         user.setRole(registerRequest.getRole());
+        String code = codeUtility.generateUserCode(registerRequest.getRole());
+        user.setCode(code);
         userRepo.save(user);
         String token = jwtService.generateToken(user.getName(), user.getEmail(),user.getRole());
         return new UserResponse(user.getUserId(), user.getName(), user.getEmail(), user.getRole(), token);
