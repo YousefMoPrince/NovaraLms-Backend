@@ -25,6 +25,10 @@ public class courseController {
     @PostMapping("/{courseCode}/thumbnail")
     public ResponseEntity<ApiResponse<String>> uploadThumbnail(@PathVariable String courseCode,@RequestParam("file") MultipartFile file)
             throws IOException {
+        System.out.println("Received Request for Course: " + courseCode);
+        System.out.println("File Param Name: " + file.getName());
+        System.out.println("Original Filename: " + file.getOriginalFilename());
+        System.out.println("File Size: " + file.getSize());
         return new ResponseEntity<>(CourseServices.uploadThumbnail(courseCode, file), HttpStatus.OK);
     }
     @PatchMapping("/{courseCode}/complete")

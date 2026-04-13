@@ -21,12 +21,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 @Service
@@ -46,39 +46,80 @@ public class videoServices {
         videoResponse response = videoResponse.builder().videoId(video.getVideoId()).build();
         return new ApiResponse<>("Video added", response);
     }
-    public ApiResponse<String> uploadVideoThumbnail(String courseCode,String videoId, MultipartFile file) throws IOException {
-        Courses course = CourseRepo.findByCourseCode(courseCode).orElseThrow(() -> new RuntimeException("Course not found"));
-        courseVideo video = VideoRepo.findByVideoId(videoId).orElseThrow(() -> new RuntimeException("Video not found"));
+    public ApiResponse<String> uploadVideoThumbnail(String courseCode, String videoId, MultipartFile file) throws IOException {
+        Courses course = CourseRepo.findByCourseCode(courseCode)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+        courseVideo video = VideoRepo.findByVideoId(videoId)
+                .orElseThrow(() -> new RuntimeException("Video not found"));
+
+        if (file == null || file.isEmpty()) {
+            throw new RuntimeException("Thumbnail file is missing or empty");
+        }
+
         int index = course.getThumbnailCounter() + 1;
+        String fileName = courseCode + "_" + index + ".jpg";
+
+        String projectRoot = System.getProperty("user.dir");
+        Path uploadPath = Paths.get(projectRoot, "storage", "Thumbnail", "videoThumbnail", courseCode);
+
+        if (Files.notExists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        File destinationFile = uploadPath.resolve(fileName).toFile();
+
+        try {
+            file.transferTo(destinationFile);
+        } catch (IOException e) {
+            throw new IOException("Critical error: Could not save video thumbnail. " + e.getMessage());
+        }
+
+        String dbPath = "storage/Thumbnail/videoThumbnail/" + courseCode + "/" + fileName;
+
         course.setThumbnailCounter(index);
         CourseRepo.save(course);
-        String fileName = courseCode + "_" + index + ".jpg";
-        Path path = Paths.get("storage/Thumbnail/videoThumbnail/"+courseCode+"/"+fileName);
-        Path parentPath = path.getParent();
-        if (parentPath != null && Files.notExists(parentPath)) {
-            Files.createDirectories(parentPath);
-        }
-        Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-        video.setThumbnailPath(path.toString());
+
+        video.setThumbnailPath(dbPath);
         VideoRepo.save(video);
-        return new ApiResponse<>("video thumbnail uploaded", path.toString());
+
+        return new ApiResponse<>("Video thumbnail uploaded successfully", dbPath);
     }
-    public ApiResponse<String> uploadVideo(String courseCode,String videoId, MultipartFile file) throws IOException {
-        Courses course = CourseRepo.findByCourseCode(courseCode).orElseThrow(() -> new RuntimeException("Course not found"));
-        courseVideo video = VideoRepo.findByVideoId(videoId).orElseThrow(() -> new RuntimeException("Video not found"));
+    public ApiResponse<String> uploadVideo(String courseCode, String videoId, MultipartFile file) throws IOException {
+        Courses course = CourseRepo.findByCourseCode(courseCode)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+        courseVideo video = VideoRepo.findByVideoId(videoId)
+                .orElseThrow(() -> new RuntimeException("Video not found"));
+
+        if (file == null || file.isEmpty()) {
+            throw new RuntimeException("Failed to upload empty video file");
+        }
+
         int index = course.getVideoCounter() + 1;
+        String fileName = courseCode + "_" + index + ".mp4";
+
+        String projectRoot = System.getProperty("user.dir");
+        Path uploadPath = Paths.get(projectRoot, "storage", "courseVideos", courseCode);
+
+        if (Files.notExists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        File destinationFile = uploadPath.resolve(fileName).toFile();
+
+        try {
+            file.transferTo(destinationFile);
+        } catch (IOException e) {
+            throw new IOException("Critical error: Could not save video file to disk. " + e.getMessage());
+        }
+
         course.setVideoCounter(index);
         CourseRepo.save(course);
-        String fileName = courseCode + "_" + index + ".mp4";
-        Path path = Paths.get("storage/courseVideos/" + courseCode + "/" + fileName);
-        Path parentPath = path.getParent();
-        if (parentPath != null && Files.notExists(parentPath)) {
-            Files.createDirectories(parentPath);
-        }
-        Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-        video.setVideoPath(path.toString());
+
+        String dbPath = "storage/courseVideos/" + courseCode + "/" + fileName;
+        video.setVideoPath(dbPath);
         VideoRepo.save(video);
-        return new ApiResponse<>("video uploaded", path.toString());
+
+        return new ApiResponse<>("Video uploaded successfully", dbPath);
     }
     public ApiResponse<videoResponse> finalizeVideo(String videoId, videoRequest request) {
         courseVideo video = VideoRepo.findByVideoId(videoId).orElseThrow(()->new RuntimeException("Video not found"));
@@ -123,9 +164,12 @@ public class videoServices {
             throw new RuntimeException("Access Denied: You are not enrolled in this course");
         }
 
-        Path path = Paths.get(video.getVideoPath());
+        String projectRoot = System.getProperty("user.dir");
+        Path path = Paths.get(projectRoot, video.getVideoPath());
+
         if (!Files.exists(path)) {
-            throw new RuntimeException("Video file not found on server at: " + video.getVideoPath());
+            System.err.println("CRITICAL: Video not found at " + path.toAbsolutePath());
+            throw new RuntimeException("Video file not found on server");
         }
 
         UrlResource videoResource = new UrlResource(path.toUri());
@@ -136,10 +180,9 @@ public class videoServices {
         if (range != null) {
             long start = range.getRangeStart(contentLength);
             long end = range.getRangeEnd(contentLength);
-            long rangeLength = Math.min(1024 * 1024, end - start + 1); // بنبعت 1 ميجا بـ 1 ميجا عشان السرعة
+            long rangeLength = Math.min(1024 * 1024, end - start + 1); // 1MB chunks
             return new ResourceRegion(videoResource, start, rangeLength);
         } else {
-            // لو مفيش Range محدد (البداية خالص) بنبعت أول ميجا
             long rangeLength = Math.min(1024 * 1024, contentLength);
             return new ResourceRegion(videoResource, 0, rangeLength);
         }

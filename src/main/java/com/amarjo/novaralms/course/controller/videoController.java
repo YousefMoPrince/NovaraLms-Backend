@@ -48,7 +48,7 @@ public class videoController {
 
 
            ResourceRegion video = VideoServices.streamVideo(videoId, headers, auth);
-           return ResponseEntity.ok()
+           return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
                    .contentType(MediaType.parseMediaType("video/mp4"))
                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
                    .body(video);

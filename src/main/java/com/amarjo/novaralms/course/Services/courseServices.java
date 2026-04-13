@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,18 +40,35 @@ public class courseServices {
         courseResponse response = courseResponse.builder().courseCode(course.getCourseCode()).build();
         return new ApiResponse<>("course created", response);
     }
-    public ApiResponse<String> uploadThumbnail(String courseCode,MultipartFile file)throws IOException {
-    String fileName = courseCode + ".jpg";
-        Path path = Paths.get("storage/Thumbnail/courseThumbnail/" + fileName);
-        Path parentPath = path.getParent();
-        if (parentPath != null && Files.notExists(parentPath)) {
-            Files.createDirectories(parentPath);
+    public ApiResponse<String> uploadThumbnail(String courseCode, MultipartFile file) throws IOException {
+        Courses course = CourseRepo.findByCourseCode(courseCode)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+
+        if (file == null || file.isEmpty()) {
+            throw new RuntimeException("Course thumbnail file is missing or empty");
         }
-        Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-        Courses course = CourseRepo.findByCourseCode(courseCode).orElseThrow(()->new RuntimeException("Course not found"));
-        course.setThumbnailPath(path.toString());
+
+        String fileName = courseCode + ".jpg";
+        String uploadDir = System.getProperty("user.dir") + File.separator + "storage" + File.separator + "Thumbnail" + File.separator + "courseThumbnail";
+
+        File directory = new File(uploadDir);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+
+        File destinationFile = new File(directory, fileName);
+
+        try {
+            file.transferTo(destinationFile);
+        } catch (IOException e) {
+            throw new IOException("Critical error during course thumbnail upload: " + e.getMessage());
+        }
+
+        String relativePath = "storage/Thumbnail/courseThumbnail/" + fileName;
+        course.setThumbnailPath(relativePath);
         CourseRepo.save(course);
-        return new ApiResponse<>("course thumbnail uploaded", path.toString());
+
+        return new ApiResponse<>("Course thumbnail uploaded successfully", relativePath);
     }
     public ApiResponse<courseResponse> updateCreatedCourse(String courseCode, courseRequest request) {
         Courses course = CourseRepo.findByCourseCode(courseCode).orElseThrow(() -> new RuntimeException("Course not found"));
