@@ -39,6 +39,10 @@ Performance Optimization: Leverages the strengths of both SQL and NoSQL to minim
 [ ] PayOn Integration: Integration of the "PayOn" financial gateway with Idempotency Key support for secure, non-duplicate transactions.
 
 [ ] Real-time Notifications: WebSocket-based notifications for new content and enrollment updates.
+## 🔗 API Documentation & Usage
+
+The project uses a structured REST API. For a complete list of endpoints, request formats, and response examples, please refer to our interactive documentation:
+[![Postman](https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=postman&logoColor=white)](https://documenter.getpostman.com/view/44373936/2sBXitE8Sz)
 
 🚀Run the Project
 ```bash
