@@ -13,7 +13,7 @@ public class courseResponse {
     private String shortDescription;
     private String courseDescription;
     private String thumbnailPath;
-    private Integer courseHours;
+    private Double courseHours;
     private String createdAt;
-    private Long instructorCode;
+    private String instructorCode;
 }

@@ -6,5 +6,5 @@ import lombok.Data;
 public class enrollmentRequest {
     private String courseCode;
     private String instructorCode;
-    private Long studentId;
+
 }

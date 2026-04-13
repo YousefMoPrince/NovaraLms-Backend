@@ -20,7 +20,7 @@ public class courseController {
     private courseServices CourseServices;
     @PostMapping("/createCourse")
     public ResponseEntity<ApiResponse<courseResponse>> createCourse(@RequestBody courseRequest CourseRequest) {
-      return new ResponseEntity<>(CourseServices.createCourse(CourseRequest), HttpStatus.CREATED);
+        return new ResponseEntity<>(CourseServices.createCourse(CourseRequest), HttpStatus.CREATED);
     }
     @PostMapping("/{courseCode}/thumbnail")
     public ResponseEntity<ApiResponse<String>> uploadThumbnail(@PathVariable String courseCode,@RequestParam("file") MultipartFile file)
@@ -36,7 +36,7 @@ public class courseController {
         return new ResponseEntity<>(CourseServices.updateCourse(courseCode, CourseRequest), HttpStatus.OK);
     }
     @DeleteMapping("/{courseCode}/delete")
-    public ResponseEntity<ApiResponse<courseResponse>> deleteCourse(@PathVariable String courseCode) {
+    public ResponseEntity<ApiResponse<courseResponse>> deleteCourse(@PathVariable String courseCode) throws IOException {
         return new ResponseEntity<>(CourseServices.deleteCourse(courseCode), HttpStatus.OK);
     }
     @GetMapping("/{courseCode}/getCourse")
@@ -48,7 +48,7 @@ public class courseController {
         return new ResponseEntity<>(CourseServices.getAllCourses(), HttpStatus.OK);
     }
     @GetMapping("/instructorCourses/{instructorCode}")
-    public ResponseEntity<ApiResponse<List<courseResponse>>> getCoursesByInstructor(@PathVariable Long instructorCode) {
+    public ResponseEntity<ApiResponse<List<courseResponse>>> getCoursesByInstructor(@PathVariable String instructorCode) {
         return new ResponseEntity<>(CourseServices.getCoursesByInstructor(instructorCode), HttpStatus.OK);
     }
 

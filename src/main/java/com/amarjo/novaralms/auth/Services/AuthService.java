@@ -28,14 +28,14 @@ public class AuthService {
         user.setCode(code);
         userRepo.save(user);
         String token = jwtService.generateToken(user.getName(), user.getEmail(),user.getRole());
-        return new UserResponse(user.getUserId(), user.getName(), user.getEmail(), user.getRole(), token);
+        return new UserResponse(user.getUserId(), user.getName(), user.getEmail(), user.getCode(), user.getRole(), token);
     }
     public UserResponse login(LoginRequest loginRequest) {
-        users user = (users) userRepo.findByEmail(loginRequest.getEmail()).orElseThrow(()->new RuntimeException("user Not Found"));
+        users user = userRepo.findByEmail(loginRequest.getEmail()).orElseThrow(()->new RuntimeException("user Not Found"));
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new RuntimeException("Wrong password");
         }
     String token = jwtService.generateToken(user.getName(), user.getEmail(),user.getRole());
-    return new UserResponse(user.getUserId(), user.getName(), user.getEmail(), user.getRole(), token);
+    return new UserResponse(user.getUserId(), user.getName(), user.getCode(), user.getEmail(), user.getRole(), token);
     }
 }

@@ -10,6 +10,7 @@ import com.amarjo.novaralms.course.repo.enrollmentRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -20,8 +21,13 @@ public class enrollmentService {
     @Autowired
     private userRepo UserRepo;
 
-    public ApiResponse<enrollmentResponse> enrollStudent(enrollmentRequest request) {
-        users student = UserRepo.findById(request.getStudentId()).orElseThrow(() -> new RuntimeException("Student not found"));
+    public ApiResponse<enrollmentResponse> enrollStudent(enrollmentRequest request, String email) {
+        users student = UserRepo.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+        if (EnrollmentRepo.existsByStudentIdAndCourseCode(student, request.getCourseCode())) {
+            throw new RuntimeException("You are already enrolled in this course");
+        }
+
         enrollments enrollment = enrollments.builder()
                 .courseCode(request.getCourseCode())
                 .instructorCode(request.getInstructorCode())
@@ -41,9 +47,8 @@ public class enrollmentService {
 
         return new ApiResponse<>("Student enrolled successfully", response);
     }
-    public ApiResponse<Integer> getEnrollmentCountByCourse(String courseCode) {
-        List<enrollments> enrollmentsList = EnrollmentRepo.findenrollmentsByCourseCode(courseCode);
-        int count = enrollmentsList.size();
+    public ApiResponse<Long> getEnrollmentCountByCourse(String courseCode) {
+        long count = EnrollmentRepo.countByCourseCode(courseCode);
         return new ApiResponse<>("Enrollment count fetched successfully", count);
     }
 

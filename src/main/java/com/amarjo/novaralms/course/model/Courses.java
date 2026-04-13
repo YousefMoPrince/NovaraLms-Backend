@@ -1,10 +1,12 @@
 package com.amarjo.novaralms.course.model;
 
-import jakarta.persistence.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -17,15 +19,16 @@ import java.time.LocalDateTime;
 public class Courses {
     @Id
     private String courseId;
+    @Indexed(unique = true)
     private String courseCode;
     private String courseName;
     private String department;
     private String shortDescription;
     private String courseDescription;
     private String thumbnailPath;
-    private Integer courseHours;
+    private Double courseHours;
     private LocalDateTime createdAt;
-    private Long instructorCode;
+    private String instructorCode;
     private Integer videoCounter = 0;
     private Integer thumbnailCounter = 0;
 

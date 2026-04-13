@@ -7,6 +7,7 @@ import com.amarjo.novaralms.course.Services.enrollmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,12 +16,12 @@ public class enrollmentController {
     @Autowired
     private enrollmentService EnrollmentService;
     @PostMapping("/enrollstudent")
-    public ResponseEntity<ApiResponse<enrollmentResponse>> enrollStudent(@RequestBody enrollmentRequest request) {
-
-        return new ResponseEntity<>(EnrollmentService.enrollStudent(request), HttpStatus.CREATED);
+    public ResponseEntity<ApiResponse<enrollmentResponse>> enrollStudent(@RequestBody enrollmentRequest request, Authentication auth) {
+    String email = auth.getName();
+        return new ResponseEntity<>(EnrollmentService.enrollStudent(request,email), HttpStatus.CREATED);
     }
     @GetMapping("/{courseCode}/enrollmentcount")
-    public ResponseEntity<ApiResponse<Integer>> getEnrollmentCount(@PathVariable String courseCode) {
+    public ResponseEntity<ApiResponse<Long>> getEnrollmentCount(@PathVariable String courseCode) {
         return new ResponseEntity<>(EnrollmentService.getEnrollmentCountByCourse(courseCode), HttpStatus.OK);
     }
 }

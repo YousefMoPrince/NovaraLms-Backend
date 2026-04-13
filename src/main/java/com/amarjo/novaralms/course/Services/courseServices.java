@@ -4,9 +4,12 @@ import com.amarjo.novaralms.course.DTO.ApiResponse;
 import com.amarjo.novaralms.course.DTO.courseRequest;
 import com.amarjo.novaralms.course.DTO.courseResponse;
 import com.amarjo.novaralms.course.model.Courses;
+import com.amarjo.novaralms.course.model.courseVideo;
 import com.amarjo.novaralms.course.repo.courseRepo;
+import com.amarjo.novaralms.course.repo.videoRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -21,6 +24,7 @@ import java.util.List;
 public class courseServices {
     @Autowired
     private courseRepo CourseRepo;
+    private videoRepo VideoRepo;
 
 
     public ApiResponse<courseResponse> createCourse(courseRequest request) {
@@ -38,8 +42,14 @@ public class courseServices {
     public ApiResponse<String> uploadThumbnail(String courseCode,MultipartFile file)throws IOException {
     String fileName = courseCode + ".jpg";
         Path path = Paths.get("storage/Thumbnail/courseThumbnail/" + fileName);
-        Files.createDirectories(path.getParent());
+        Path parentPath = path.getParent();
+        if (parentPath != null && Files.notExists(parentPath)) {
+            Files.createDirectories(parentPath);
+        }
         Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+        Courses course = CourseRepo.findByCourseCode(courseCode).orElseThrow(()->new RuntimeException("Course not found"));
+        course.setThumbnailPath(path.toString());
+        CourseRepo.save(course);
         return new ApiResponse<>("course thumbnail uploaded", path.toString());
     }
     public ApiResponse<courseResponse> updateCreatedCourse(String courseCode, courseRequest request) {
@@ -48,9 +58,9 @@ public class courseServices {
             throw new RuntimeException("Course not found");
         }
         course.setCourseDescription(request.getCourseDescription());
-        course.setThumbnailPath(request.getThumbnailPath());
-        course.setCourseHours(0);
+        course.setCourseHours(0.0);
         course.setCreatedAt(LocalDateTime.now());
+        CourseRepo.save(course);
         courseResponse response = courseResponse.builder().courseName(request.getCourseName()).courseCode(courseCode).shortDescription(request.getShortDescription()).courseDescription(request.getCourseDescription()).thumbnailPath(request.getThumbnailPath()).courseHours(request.getCourseHours()).createdAt(request.getCreatedAt()).instructorCode(request.getInstructorCode()).build();
         return new ApiResponse<>("course creation complete", response);
     }
@@ -78,10 +88,22 @@ public class courseServices {
 
         return new ApiResponse<>("course updated successfully", response);
     }
-    public ApiResponse<courseResponse> deleteCourse(String courseCode) {
+    public ApiResponse<courseResponse> deleteCourse(String courseCode) throws IOException {
         Courses course = CourseRepo.findByCourseCode(courseCode).orElseThrow(()-> new RuntimeException("Course not found"));
         if (course == null) {
             throw new RuntimeException("Course not found");
+        }
+        if (course.getThumbnailPath() != null) {
+            Files.deleteIfExists(Paths.get(course.getThumbnailPath()));
+        }
+        List<courseVideo> videos = VideoRepo.findByCourseCode(courseCode);
+        for (courseVideo video : videos) {
+            if (video.getVideoPath() != null) Files.deleteIfExists(Paths.get(video.getVideoPath()));
+            if (video.getThumbnailPath() != null) Files.deleteIfExists(Paths.get(video.getThumbnailPath()));
+        }
+        Path courseFolder = Paths.get("storage/courseVideos/" + courseCode);
+        if (Files.exists(courseFolder)) {
+            FileSystemUtils.deleteRecursively(courseFolder);
         }
         CourseRepo.delete(course);
         courseResponse response = courseResponse.builder().build();
@@ -92,7 +114,17 @@ public class courseServices {
         if (course == null) {
             throw new RuntimeException("Course not found");
         }
-        courseResponse response = courseResponse.builder().courseName(course.getCourseName()).shortDescription(course.getShortDescription()).courseDescription(course.getCourseDescription()).thumbnailPath(course.getThumbnailPath()).courseHours(course.getCourseHours()).createdAt(String.valueOf(course.getCreatedAt())).instructorCode(course.getInstructorCode()).build();
+        courseResponse response = courseResponse.builder()
+                .courseCode(course.getCourseCode())
+                .department(course.getDepartment())
+                .courseName(course.getCourseName())
+                .shortDescription(course.getShortDescription())
+                .courseDescription(course.getCourseDescription())
+                .thumbnailPath(course.getThumbnailPath())
+                .courseHours(course.getCourseHours())
+                .createdAt(String.valueOf(course.getCreatedAt()))
+                .instructorCode(course.getInstructorCode())
+                .build();
         return new ApiResponse<>("course get successfully", response);
     }
     public ApiResponse<List<courseResponse>> getAllCourses() {
@@ -113,7 +145,7 @@ public class courseServices {
 
         return new ApiResponse<>("all courses fetched", responses);
     }
-    public ApiResponse<List<courseResponse>> getCoursesByInstructor(Long instructorCode) {
+    public ApiResponse<List<courseResponse>> getCoursesByInstructor(String instructorCode) {
         List<Courses> coursesList = CourseRepo.findCoursesByInstructorCode(instructorCode).orElseThrow(()->new RuntimeException("Courses not found"));
         List<courseResponse> responses = coursesList.stream()
                 .map(course -> courseResponse.builder()

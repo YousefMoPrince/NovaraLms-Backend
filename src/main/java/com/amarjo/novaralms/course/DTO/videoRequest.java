@@ -5,8 +5,8 @@ import lombok.Data;
 @Data
 public class videoRequest {
     private String courseCode;
-    private String Title;
-    private String Description;
+    private String title;
+    private String description;
     private String videoPath;
     private String thumbnailPath;
     private Integer duration;

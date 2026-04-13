@@ -8,5 +8,5 @@ import java.util.Optional;
 
 public interface courseRepo extends MongoRepository<Courses,String> {
    Optional <Courses> findByCourseCode(String courseCode);
-   Optional <List<Courses>> findCoursesByInstructorCode(Long instructorCode);
+   Optional <List<Courses>> findCoursesByInstructorCode(String instructorCode);
 }

@@ -5,8 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface userRepo extends JpaRepository<users, Integer> {
-boolean existsByEmail(String email);
+public interface userRepo extends JpaRepository<users, Long> {
+
 Optional <users> findByEmail(String email);
-Optional<users> findById(Long strudentId);
+
 }
