@@ -29,5 +29,23 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+### Spring Boot ###
+.env
+application-local.properties
+application-dev.properties
+application.properties
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
 ### VS Code ###
 .vscode/
+
+### storage ###
+storage/
+logs/
+### System ###
+.DS_Store
+Thumbs.db
