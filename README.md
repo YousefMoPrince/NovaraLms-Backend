@@ -27,12 +27,12 @@ Automated Course Management: Dedicated endpoints for instructors to manage video
 Performance Optimization: Leverages the strengths of both SQL and NoSQL to minimize latency in high-traffic scenarios.
 
 📂 Project Structure
-'''
+```text
 ├── src/main/java/com/amarjo/novaralms
 │   ├── auth/          # JWT Security & Identity Management
 │   └── course/        # Courses, Videos & Streaming Logic
 └── storage/           # Local storage for Media
-'''
+```
 🚀 Future Roadmap
 [ ] Progress Tracking: Implementation of student progress monitoring and course completion percentage calculation.
 
@@ -41,9 +41,9 @@ Performance Optimization: Leverages the strengths of both SQL and NoSQL to minim
 [ ] Real-time Notifications: WebSocket-based notifications for new content and enrollment updates.
 
 🚀Run the Project
-'''bash
+```bash
 mvn spring-boot:run
-'''
+```
 👨‍💻 Developer
 Yousef Mohammed
 Software Engineering Student | Backend & Systems Engineer | Mobile Application Developer
