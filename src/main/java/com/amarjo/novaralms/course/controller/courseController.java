@@ -31,7 +31,7 @@ public class courseController {
     public ResponseEntity<ApiResponse<courseResponse>> completeCourse(@PathVariable String courseCode,@RequestBody courseRequest CourseRequest) {
         return new ResponseEntity<>(CourseServices.updateCreatedCourse(courseCode, CourseRequest), HttpStatus.OK);
     }
-    @PutMapping("/{courseCode}/update")
+    @PatchMapping("/{courseCode}/update")
     public ResponseEntity<ApiResponse<courseResponse>> updateCourse(@PathVariable String courseCode,@RequestBody courseRequest CourseRequest) {
         return new ResponseEntity<>(CourseServices.updateCourse(courseCode, CourseRequest), HttpStatus.OK);
     }

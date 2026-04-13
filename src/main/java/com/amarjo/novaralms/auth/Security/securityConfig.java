@@ -38,7 +38,7 @@ public class securityConfig {
                         .requestMatchers(HttpMethod.POST,"/api/v1/video/*/uploadvideo/*").hasRole("INSTRUCTOR")
 
                         .requestMatchers(HttpMethod.PATCH,"/api/v1/video/*/finalizevideo").hasRole("INSTRUCTOR")
-                        .requestMatchers(HttpMethod.PUT,"/api/v1/course/*/update").hasRole("INSTRUCTOR")
+                        .requestMatchers(HttpMethod.PATCH,"/api/v1/course/*/update").hasRole("INSTRUCTOR")
                         .requestMatchers(HttpMethod.PATCH,"/api/v1/course/*/complete").hasRole("INSTRUCTOR")
 
                         .requestMatchers(HttpMethod.DELETE,"/api/v1/video/*/deletevideo").hasRole("INSTRUCTOR")
