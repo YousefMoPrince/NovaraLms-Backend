@@ -157,10 +157,9 @@ public class videoServices {
                 .orElseThrow(() -> new RuntimeException("Course not found"));
 
         String courseCode = video.getCourseCode();
-        boolean isInstructor = course.getInstructorCode().equals(student.getCode());
         boolean isEnrolled = EnrollRepo.existsByStudentIdAndCourseCode(student, courseCode);
 
-        if (!isEnrolled && !isInstructor) {
+        if (!isEnrolled) {
             throw new RuntimeException("Access Denied: You are not enrolled in this course");
         }
 
