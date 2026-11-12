@@ -27,6 +27,12 @@ public class users {
     private String password;
     @Column(name = "role", nullable = false, length = 30)
     private String role;
-
-
+    @Column(name = "thumbnail_path", length = 255)
+    private String thumbnailPath;
+    @Column(name = "account_number")
+    private Long accountNumber;
+    @Column(name = "is_ready_for_payment", nullable = false)
+    private Boolean isReadyForPayment;
+    @Column(name = "user_status", nullable = false)
+    private UserStatus userStatus;
 }

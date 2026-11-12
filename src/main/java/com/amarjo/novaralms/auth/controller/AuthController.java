@@ -1,31 +1,59 @@
 package com.amarjo.novaralms.auth.controller;
 
-import com.amarjo.novaralms.auth.DTO.ApiResponse;
-import com.amarjo.novaralms.auth.DTO.LoginRequest;
-import com.amarjo.novaralms.auth.DTO.RegisterRequest;
-import com.amarjo.novaralms.auth.DTO.UserResponse;
+import com.amarjo.novaralms.auth.DTO.*;
 import com.amarjo.novaralms.auth.Services.AuthService;
+import com.amarjo.novaralms.auth.model.UserStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/api/web/v1/auth")
 public class AuthController {
     @Autowired
     private AuthService authService;
+    private final static Character c = 'W';
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<UserResponse>> register(@RequestBody RegisterRequest registerRequest) {
-        UserResponse userResponse = authService.register(registerRequest);
+        UserResponse userResponse = authService.register(registerRequest,c);
         return ResponseEntity.ok(new ApiResponse<>("Register Successful", userResponse));
+    }
+    @PostMapping("/uploadThumbnail")
+    public ResponseEntity<Map<String, Object>> uploadThumbnail(@RequestPart("file") MultipartFile file) {
+    String filePath = authService.UploadThumbnail(file,c);
+    return ResponseEntity.ok(Map.of(
+            "message", "Thumbnail uploaded successfully",
+            "data", Map.of("thumbnail_path", filePath)
+    ));
     }
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<UserResponse>> login(@RequestBody LoginRequest loginRequest) {
-        UserResponse userResponse = authService.login(loginRequest);
+        UserResponse userResponse = authService.login(loginRequest,c);
         return ResponseEntity.ok(new ApiResponse<>("Login Successful", userResponse));
+    }
+    @PatchMapping("/status/change")
+    public ResponseEntity<?> changeUserStatus(@RequestParam UserStatus userStatus) {
+        authService.changeUserStatus(userStatus,c);
+        return ResponseEntity.ok(new ApiResponse<>("Change User Status Successful", userStatus));
+    }
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout() {
+        authService.webLogout();
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+    @PutMapping("/update")
+    public ResponseEntity<String> update(@RequestBody UpdateRequest updateRequest) {
+    authService.updateUser(c,updateRequest);
+    return ResponseEntity.ok("Update Successful");
+    }
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<UserResponse>> getUser() {
+        UserResponse userResponse = authService.getUser(c);
+        return ResponseEntity.ok(new ApiResponse<>("User profile updated successfully",userResponse));
     }
 }
